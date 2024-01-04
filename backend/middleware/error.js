@@ -9,8 +9,24 @@ module.exports = (err,req,res,next) =>{
         const message = `Resource not found.Invalid:${err.path}`;
         err = new ErrorHandler(message,400);
     }
+    // Handling Mongoose Validation Error
     if(err.name === "ValidationError"){
         const message = Object.values(err.errors).map(value => value.message);
+        err = new ErrorHandler(message,400);
+    }
+    // Handling Mongoose duplicate key errors
+    if(err.code === 11000){
+        const message = `Duplicate ${Object.keys(err.keyValue)} entered`;
+        err = new ErrorHandler(message,400);
+    }
+    // Handling wrong JWT error
+    if(err.name === "JsonWebTokenError"){
+        const message = `Json Web Token is Invalid`;
+        err = new ErrorHandler(message,400);
+    }    
+    // Handling Expired JWT error
+    if(err.name === "TokenExpiredError"){
+        const message = `Json Web Token is Expired`;
         err = new ErrorHandler(message,400);
     }
     res.status(err.statusCode).json({
